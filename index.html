@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>upload image</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.1.0/fabric.all.min.js"></script>
+    <!-- Get the highest 1.X version of jQuery from CDN. Required for ready() function. -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="./public/dist/js/angular.min.js"></script>
+    <script src="./public/dist/js/angular-ui-router.js"></script>
+    <style>
+    body {
+        margin-top: 8px;
+    }
+
+    .row>img {
+        width: 100%;
+        background-size: cover;
+    }
+
+    .thumbnail {
+        max-width: 100px;
+        display: inline;
+    }
+
+    .a {
+        text-decoration: none;
+    }
+    .canvas{
+        border: 1px solid black;
+    }
+    </style>
+</head>
+
+<body ng-app="myApp">
+    <div class="container">
+        <div ng-controller="uploadCtrl" class="row">
+            <button class="btn btn-primary pull-right" ng-hide="images.length == 0" ng-click="clearAll()">Clear All</button>
+            <h3 ng-bind="name"></h3>
+            <input type="file" ng-click="$event = $event" ng-model="display" multiple onchange="angular.element(this).scope().upload(event)" accept="image/png, image/jpeg, image/gif" />
+            <div class="row">
+                <div class="col-md-12"> <span ng-repeat='img in images'> <a href="#" ng-click="setImage($index)">
+                 <img ng-src="{{img}}" 
+                    alt="Generic placeholder thumbnail" style="max-height:100px;" class="thumbnail"/>
+              </a>
+
+            </span>
+                </div>
+            </div>
+            <img ng-src="{{display}}" ng-hide="!display" />
+            <h4>You have upload {{images.length}} images this session.
+            </h4>
+        </div>
+    </div>
+    <canvas id="canvas" width="450" height="450"></canvas>
+</body>
+<script>
+var myApp = angular.module('myApp', []);
+
+myApp.controller('uploadCtrl', function($scope) {
+    $scope.name = "Select Files to Upload";
+    $scope.images = [];
+    $scope.display = $scope.images[$scope.images.length - 1];
+    $scope.setImage = function(ix) {
+        $scope.display = $scope.images[ix];
+    }
+    $scope.clearAll = function() {
+        $scope.display = '';
+        $scope.images = [];
+    }
+    $scope.upload = function(obj) {
+    var canvas = new fabric.Canvas('canvas');
+        var elem = obj.target || obj.srcElement;
+        for (i = 0; i < elem.files.length; i++) {
+            var file = elem.files[i];
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                 var data = e.target.result;                    
+                fabric.Image.fromURL(data, function (img) {
+                  var oImg = img.set({left: 0, top: 0, angle: 00,width:100, height:100}).scale(0.9);
+                  canvas.add(oImg).renderAll();
+                  var a = canvas.setActiveObject(oImg);
+                  var dataURL = canvas.toDataURL({format: 'png', quality: 0.8});
+                });
+                // $scope.images.push(e.target.result);
+                // $scope.display = e.target.result;
+                // $scope.$apply();
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+})
+</script>
+
+</html>
